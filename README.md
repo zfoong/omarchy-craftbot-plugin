@@ -1,22 +1,10 @@
 # CraftBot for Omarchy
 
-The [CraftBot](https://github.com/CraftOS-dev/CraftBot) mascot in your Omarchy
+Hi Omarchian (If that's what they call the users of Omarchy OS), I made this little plugin to show the AI agent harness [CraftBot](https://github.com/CraftOS-dev/CraftBot) in your Omarchy
 bar, showing what your local CraftBot agent is doing, with a panel for the
 current model, your sessions, and the CraftBot service.
 
 ![CraftBot in the Omarchy bar](preview.png)
-
-| Mascot | Meaning |
-|---|---|
-| Eyes open, still | Idle |
-| Eyes darting | Thinking |
-| Antenna pulsing | Working / running a tool (named in the tooltip) |
-| Red antenna | Waiting for your reply |
-| Small hop | A run just finished |
-| Dimmed, eyes closed | CraftBot is offline or not installed |
-
-The status follows the same rules as the mascot inside CraftBot
-(`frontend/src/hooks/useDerivedAgentStatus.ts`).
 
 ## Install
 
