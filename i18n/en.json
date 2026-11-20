@@ -26,7 +26,6 @@
   "meta.version": "v%1",
   "section.sessions": "Sessions",
   "sessions.none": "No sessions yet",
-  "action.install": "Install CraftBot",
-  "install.help": "CraftBot isn't installed. Install downloads it (about 1 GB) into %1 and starts it.",
-  "install.running": "Installing CraftBot in the terminal window. This panel picks it up once it starts."
+  "install.help": "CraftBot isn't installed. Get CraftBot opens its install guide; this panel picks CraftBot up once it runs.",
+  "action.getCraftbot": "Get CraftBot"
 }

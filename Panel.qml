@@ -44,9 +44,8 @@ Panel {
     if (craftbot.pendingVerb === "start") return strings.t("service.starting")
     if (craftbot.pendingVerb === "stop") return strings.t("service.stopping")
     if (craftbot.pendingVerb === "restart") return strings.t("service.restarting")
-    if (craftbot.pendingVerb === "install") return strings.t("install.running")
     if (craftbot.serviceState === "failed") return strings.t("service.failed").arg(craftbot.unit)
-    if (craftbot.notInstalled) return strings.t("install.help").arg(Model.tildePath(craftbot.installDir, craftbot.home))
+    if (craftbot.notInstalled) return strings.t("install.help")
     if (craftbot.checked && !craftbot.online) return strings.t("offline.help")
     return ""
   }
@@ -232,12 +231,12 @@ Panel {
               onClicked: craftbot.openUi()
             }
             Button {
-              visible: craftbot.notInstalled || craftbot.pendingVerb === "install"
-              iconText: "󰇚"
-              text: strings.t("action.install")
+              visible: craftbot.notInstalled
+              iconText: "󰏌"
+              text: strings.t("action.getCraftbot")
               foreground: widget.foreground
               fontFamily: widget.fontFamily
-              onClicked: craftbot.install()
+              onClicked: craftbot.openInstallGuide()
             }
             Button {
               visible: craftbot.canStart

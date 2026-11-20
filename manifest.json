@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "craftbot.status",
   "name": "CraftBot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "CraftBot",
   "license": "MIT",
-  "description": "The CraftBot mascot in the Omarchy bar, showing what your agent is doing, with the current model, live session status, service controls, and a one-click install.",
+  "description": "The CraftBot mascot in the Omarchy bar, showing what your agent is doing, with the current model, live session status, and service controls.",
   "keywords": [
     "craftbot",
     "agent",
@@ -63,7 +63,7 @@
         "type": "string",
         "label": "CraftBot folder",
         "defaultValue": "~/CraftBot",
-        "description": "Where Install puts CraftBot, and where a CraftBot without a service is found. Inside your home folder."
+        "description": "Where a CraftBot without a service is found, for Start. Inside your home folder, plain path characters only."
       }
     ]
   }

@@ -26,6 +26,7 @@ import re
 import socket
 import struct
 import sys
+import urllib.error
 import urllib.request
 
 URL_RE = re.compile(r"^http://(127\.0\.0\.1|localhost|\[::1\]):(\d{1,5})$")
@@ -36,6 +37,18 @@ MAX_MESSAGE = 32 * 1024 * 1024
 MAX_STATUS = 160
 # CraftBot pings every 30 s; silence well past that means the socket is gone.
 READ_TIMEOUT = 75
+
+
+class _RefuseRedirects(urllib.request.HTTPRedirectHandler):
+    """A redirect could send the token request beyond loopback: refuse it."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(req.full_url, code, "redirects are not followed", headers, fp)
+
+
+# Loopback only: no proxies (from the environment or anywhere else) and no
+# redirects. The WebSocket itself is a direct socket to the same address.
+LOOPBACK_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}), _RefuseRedirects)
 
 
 def emit(obj):
@@ -95,7 +108,9 @@ def read_frame(stream):
 def session_token(base):
     # No Origin header: CraftBot serves the token to non-browser callers.
     req = urllib.request.Request(base + "/api/session-token", headers={"Cache-Control": "no-store"})
-    with urllib.request.urlopen(req, timeout=3) as resp:
+    with LOOPBACK_OPENER.open(req, timeout=3) as resp:
+        if resp.status != 200 or resp.geturl() != req.full_url:
+            raise ConnectionError("unexpected session token response")
         token = json.loads(resp.read(4096).decode("utf-8")).get("token", "")
     if not TOKEN_RE.match(str(token)):
         raise ValueError("unexpected session token")

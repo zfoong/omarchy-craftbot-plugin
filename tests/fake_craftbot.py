@@ -7,6 +7,7 @@ ping (the client must answer), then replays a script of messages, one line
 of JSON per message, waiting `--gap` seconds between them, and stays open.
 
 Usage: fake_craftbot.py PORT STATE_JSON SCRIPT_JSONL [--gap SECONDS] [--loop]
+                        [--redirect-token URL]   (answer the token request with a 302)
 """
 
 import base64
@@ -61,6 +62,11 @@ class Handler(socketserver.StreamRequestHandler):
         if path == "/api/state":
             return self.http(200, open(self.server.state_path, "rb").read())
         if path == "/api/session-token":
+            if self.server.redirect_token:
+                self.server.log.append("token-redirect-sent")
+                self.wfile.write(("HTTP/1.1 302 Found\r\nLocation: " + self.server.redirect_token
+                                  + "\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").encode())
+                return
             return self.http(200, json.dumps({"token": TOKEN}).encode())
         if path == "/ws":
             host = headers.get("host", "")
@@ -102,6 +108,7 @@ def main():
     server.daemon_threads = True
     server.state_path, server.gap, server.loop, server.log = state_path, gap, "--loop" in sys.argv, []
     server.script = [json.loads(l) for l in open(script_path) if l.strip()]
+    server.redirect_token = sys.argv[sys.argv.index("--redirect-token") + 1] if "--redirect-token" in sys.argv else ""
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         while True:

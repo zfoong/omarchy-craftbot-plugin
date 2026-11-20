@@ -143,7 +143,8 @@ test('install folder, state root, and ui.json ports', () => {
   const H = '/home/me'
   assert.equal(M.homePath('', H, H + '/CraftBot'), '/home/me/CraftBot')
   assert.equal(M.homePath('~/apps/CraftBot/', H, 'F'), '/home/me/apps/CraftBot')
-  for (const bad of ['/etc', '~/../root', '/home/me/a/../../x', 'relative/dir', '/home/meX/y', '~/a\nb'])
+  assert.equal(M.homePath('~/apps/craft-bot_2.0+x', H, 'F'), '/home/me/apps/craft-bot_2.0+x')
+  for (const bad of ['/etc', '~/../root', '/home/me/a/../../x', 'relative/dir', '/home/meX/y', '~/a\nb', '~/My Apps/CraftBot', '~/a;b', '~/a$b', "~/a'b", '~/a%b'])
     assert.equal(M.homePath(bad, H, 'F'), 'F', bad)
   const exec = 'ExecStart={ path=/x/python3 ; argv[]=/x/python3 /home/me/Work/CraftBot/run.py --no-open-browser --service --state-root=/home/me/Work/CraftBot ; ignore_errors=no }'
   assert.equal(M.stateRootFrom(exec), '/home/me/Work/CraftBot')

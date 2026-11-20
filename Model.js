@@ -211,13 +211,14 @@ function safePath(s) {
     && !/[\u0000-\u001f\u007f]/.test(s) && !/(^|\/)\.\.(\/|$)/.test(s)
 }
 
-// A folder setting: "~" expands to home; it must stay inside home.
+// A folder setting: "~" expands to home; it must stay inside home and use only
+// plain path characters (no spaces or shell/systemd special characters).
 function homePath(value, home, fallback) {
   var s = String(value === undefined || value === null ? "" : value).trim().replace(/\/+$/, "")
   if (s === "") return fallback
   if (s === "~") s = home
   else if (s.indexOf("~/") === 0) s = home + s.substring(1)
-  return safePath(s) && home !== "" && s.indexOf(home + "/") === 0 ? s : fallback
+  return safePath(s) && /^\/[A-Za-z0-9._\/+-]+$/.test(s) && home !== "" && s.indexOf(home + "/") === 0 ? s : fallback
 }
 
 // The install folder from the service's ExecStart (`--state-root=PATH`).

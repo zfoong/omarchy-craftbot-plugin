@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Commons
 import "Model.js" as Model
 
 // Polls the local CraftBot backend (loopback only) and controls its systemd
@@ -19,8 +18,8 @@ Item {
 
   readonly property string unit: Model.serviceName(setting("serviceName", ""), "craftbot.service")
   readonly property string home: Quickshell.env("HOME") || ""
-  // Where Install puts CraftBot, and where a CraftBot without a service is
-  // looked for. Must stay inside $HOME.
+  // Where a CraftBot without a service is looked for (for Start). Must stay
+  // inside $HOME.
   readonly property string installDir: Model.homePath(setting("installDir", ""), home, home + "/CraftBot")
 
   // CraftBot moves to the next free ports when 7925/7926 are taken and records
@@ -61,7 +60,7 @@ Item {
   property string serviceRoot: ""        // --state-root of the service
   property bool localInstall: false      // installDir holds a CraftBot (craftbot.py)
   property bool localChecked: false
-  // start | stop | restart | install
+  // start | stop | restart
   property string pendingVerb: ""
   property string lastError: ""
 
@@ -70,10 +69,10 @@ Item {
   readonly property bool serviceKnown: serviceState !== "missing" && serviceState !== "unknown"
   readonly property bool serviceUp: serviceState === "active" || serviceState === "activating" || serviceState === "reloading"
   readonly property string stateRoot: serviceRoot !== "" ? serviceRoot : localInstall ? installDir : ""
-  // Nothing answers, no service, and no CraftBot folder: offer to install.
+  // Nothing answers, no service, and no CraftBot folder: point to the install guide.
   readonly property bool notInstalled: checked && localChecked && !online && serviceState === "missing" && !localInstall
   readonly property bool canStart: !online && (serviceKnown ? !serviceUp : localInstall)
-  readonly property int pollMs: notInstalled && pendingVerb === "" ? 60000
+  readonly property int pollMs: notInstalled ? 60000
     : !online ? 15000 : (busy || key === "waiting" || panelOpen) ? 2000 : 5000
 
   // A run just ended (busy → idle): the bar gives a small hop.
@@ -82,7 +81,9 @@ Item {
   property var _xhr: null
   property string _serviceOut: ""
   readonly property string streamScript: localFile("stream.py")
-  readonly property string installScript: localFile("install.sh")
+  // CraftBot's own install instructions. The plugin doesn't run CraftBot's
+  // installer itself.
+  readonly property string installGuideUrl: "https://github.com/CraftOS-dev/CraftBot#-getting-started"
 
   function localFile(name) {
     var url = String(Qt.resolvedUrl(name))
@@ -131,7 +132,6 @@ Item {
     key = s.key
     updatedAt = Date.now()
     lastError = ""
-    if (pendingVerb === "install") { pendingVerb = ""; installWatch.stop() }
     if (wasBusy && s.key === "idle") runFinished()
     // Self-healing: every good poll makes sure the status helper is up.
     if (!streamProcess.running && !streamRetry.running && !_streamStopping) ensureStream()
@@ -189,16 +189,8 @@ Item {
     controlProcess.running = true
   }
 
-  // Clone and install CraftBot in a floating terminal (install.sh), then
-  // watch for it to come up. Clicking again reopens the terminal.
-  function install() {
-    if (!notInstalled && pendingVerb !== "install") return
-    pendingVerb = "install"
-    lastError = ""
-    Quickshell.execDetached(["omarchy-launch-floating-terminal-with-presentation",
-      Util.shellQuote(root.installScript) + " " + Util.shellQuote(root.installDir)])
-    installWatch.ticks = 0
-    installWatch.restart()
+  function openInstallGuide() {
+    Qt.openUrlExternally(root.installGuideUrl)
   }
 
   function openUi() {
@@ -249,21 +241,6 @@ Item {
 
   onPanelOpenChanged: if (panelOpen) { refresh(); refreshService(); checkLocalInstall() }
 
-  // An install takes minutes; look every 3 s for up to 30 minutes.
-  Timer {
-    id: installWatch
-    property int ticks: 0
-    interval: 3000
-    repeat: true
-    onTriggered: {
-      ticks += 1
-      root.refresh()
-      root.refreshService()
-      root.checkLocalInstall()
-      if (ticks >= 600) { running = false; ticks = 0; root.pendingVerb = "" }
-    }
-  }
-
   FileView {
     path: root.stateRoot !== "" ? root.stateRoot + "/ui.json" : ""
     watchChanges: true
@@ -310,7 +287,10 @@ Item {
   }
 
   onOnlineChanged: if (online) ensureStream(); else stopStream()
-  onApiUrlChanged: { stopStream(); if (!_streamStopping) ensureStream() }
+  onApiUrlChanged: { stopStream(); if (!_streamStopping) ensureStream(); refresh() }
+  // A changed setting is checked at once, not at the next (up to 60 s) poll.
+  onUnitChanged: refreshService()
+  onInstallDirChanged: checkLocalInstall()
 
   // A dropped or refused socket is retried: 5 s, then doubling to a minute,
   // back to 5 s once a helper connects.
