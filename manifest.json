@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "craftbot.status",
+  "name": "CraftBot",
+  "version": "1.0.0",
+  "author": "CraftBot",
+  "license": "MIT",
+  "description": "The CraftBot mascot in the Omarchy bar, showing what your agent is doing, with the current model, live session status, service controls, and a one-click install.",
+  "keywords": [
+    "craftbot",
+    "agent",
+    "ai",
+    "status",
+    "mascot"
+  ],
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "homepage": "https://github.com/zfoong/omarchy-craftbot-plugin",
+  "repository": "https://github.com/zfoong/omarchy-craftbot-plugin.git",
+  "barWidget": {
+    "displayName": "CraftBot",
+    "description": "Live agent status from the local CraftBot app: idle, thinking, running a tool, or waiting for your reply.",
+    "category": "AI",
+    "aliases": [
+      "craftbot",
+      "agent"
+    ],
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "apiUrl": "http://127.0.0.1:7926",
+      "uiUrl": "http://localhost:7925",
+      "serviceName": "craftbot.service",
+      "installDir": "~/CraftBot"
+    },
+    "schema": [
+      {
+        "key": "apiUrl",
+        "type": "string",
+        "label": "CraftBot backend URL",
+        "defaultValue": "http://127.0.0.1:7926",
+        "description": "Loopback only, e.g. http://127.0.0.1:7926."
+      },
+      {
+        "key": "uiUrl",
+        "type": "string",
+        "label": "CraftBot UI URL",
+        "defaultValue": "http://localhost:7925",
+        "description": "Opened on right click and from the panel. Loopback only."
+      },
+      {
+        "key": "serviceName",
+        "type": "string",
+        "label": "systemd user service",
+        "defaultValue": "craftbot.service"
+      },
+      {
+        "key": "installDir",
+        "type": "string",
+        "label": "CraftBot folder",
+        "defaultValue": "~/CraftBot",
+        "description": "Where Install puts CraftBot, and where a CraftBot without a service is found. Inside your home folder."
+      }
+    ]
+  }
+}
